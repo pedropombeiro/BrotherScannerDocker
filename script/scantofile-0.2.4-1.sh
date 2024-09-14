@@ -13,7 +13,7 @@
     gm_opts+=(-compress JPEG -quality 80)
   fi
 
-  # device=$1
+  device="$1"
   date=$(date +%Y-%m-%d-%H-%M-%S)
 
   mkdir -p "/tmp/$date"
@@ -22,23 +22,19 @@
   output_file="${filename_base}%04d.pnm"
   echo "filename: $output_file"
 
-  #sthg is wrong with device name, probably escaping, use default printer:
-  #scan_cmd="scanimage -l 0 -t 0 -x 215 -y 297 --device-name=$device --resolution=$resolution --batch=$output_file"
-  scan_cmd="scanimage -l 0 -t 0 -x 215 -y 297 --resolution=$resolution --batch=$output_file"
-
   if [ "$(which usleep 2>/dev/null)" != '' ]; then
     usleep 100000
   else
     sleep 0.1
   fi
-  eval "$scan_cmd"
+  scanimage ${scan_args[@]} --device-name="$device"
   if [ ! -s "${filename_base}0001.pnm" ]; then
     if [ "$(which usleep 2>/dev/null)" != '' ]; then
       usleep 1000000
     else
       sleep 1
     fi
-    eval "$scan_cmd"
+    scanimage ${scan_args[@]} --device-name="$device"
   fi
 
   #only convert when no back pages are being scanned:

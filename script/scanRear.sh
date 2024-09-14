@@ -12,7 +12,7 @@ if [ "$USE_JPEG_COMPRESSION" = "true" ]; then
   gm_opts+=(-compress JPEG -quality 80)
 fi
 
-# device=$1
+device="$1"
 mkdir -p /tmp
 cd /tmp || exit
 date=$(ls -rd */ | grep "$(date +"%Y-%m-%d")" | head -1)
@@ -25,23 +25,23 @@ cd "/tmp/${date}" || exit
 kill -9 "$(cat scan_pid)"
 rm scan_pid
 
-#sthg is wrong with device name, probably escaping, use default printer:
-#scan_cmd="scanimage -l 0 -t 0 -x 215 -y 297 --device-name=$device --resolution=$resolution --batch=$output_file"
-scan_cmd="scanimage -l 0 -t 0 -x 215 -y 297 --resolution=$resolution --batch=$output_file"
+function scan_cmd() {
+  scanimage -l 0 -t 0 -x 215 -y 297 "--device-name=$1" "--resolution=$2" "--batch=$3"
+}
 
 if [ "$(which usleep 2>/dev/null)" != '' ]; then
   usleep 100000
 else
   sleep 0.1
 fi
-eval "$scan_cmd"
+scan_cmd "$device" "$resolution" "$output_file"
 if [ ! -s "${filename_base}0001.pnm" ]; then
   if [ "$(which usleep 2>/dev/null)" != '' ]; then
     usleep 1000000
   else
     sleep 1
   fi
-  eval "$scan_cmd"
+  scan_cmd "$device" "$resolution" "$output_file"
 fi
 
 (
